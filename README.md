@@ -7,7 +7,7 @@
 Docker is an **open-source containerization platform** that allows you to package applications and their dependencies into **lightweight, portable containers**.
 Unlike virtual machines (VMs), containers **share the host OS kernel** but remain **isolated** from each other, making them:
 
-* Faster to start
+* Faster to start  
 * Smaller in size
 * Easier to manage and deploy
 
