@@ -1,0 +1,80 @@
+version: "3.9"
+
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    container_name: namenode
+    hostname: namenode
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "9870:9870"   # HDFS UI
+      - "9000:9000"   # HDFS RPC
+    environment:
+      - CLUSTER_NAME=hadoop-datalake
+    volumes:
+      - namenode:/hadoop/dfs/name
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    container_name: datanode
+    hostname: datanode
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "9864:9864"   # Datanode Web UI
+    environment:
+      - CORE_CONF_fs_defaultFS=hdfs://namenode:9000
+      - SERVICE_PRECONDITION=namenode:9870
+    volumes:
+      - datanode:/hadoop/dfs/data
+    depends_on:
+      - namenode
+
+  resourcemanager:
+    image: bde2020/hadoop-resourcemanager:2.0.0-hadoop2.7.4-java8
+    container_name: resourcemanager
+    hostname: resourcemanager
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "8088:8088"   # YARN ResourceManager UI
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870 datanode:9864
+    depends_on:
+      - namenode
+      - datanode
+
+  nodemanager:
+    image: bde2020/hadoop-nodemanager:2.0.0-hadoop2.7.4-java8
+    container_name: nodemanager
+    hostname: nodemanager
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "8042:8042"   # NodeManager UI
+    environment:
+      - SERVICE_PRECONDITION=resourcemanager:8088
+    depends_on:
+      - resourcemanager
+
+  historyserver:
+    image: bde2020/hadoop-historyserver:2.0.0-hadoop2.7.4-java8
+    container_name: historyserver
+    hostname: historyserver
+    platform: linux/amd64
+    restart: always
+    ports:
+      - "8188:8188"   # Job History UI
+    volumes:
+      - historyserver:/hadoop/yarn/timeline
+    environment:
+      - SERVICE_PRECONDITION=resourcemanager:8088 nodemanager:8042
+    depends_on:
+      - resourcemanager
+      - nodemanager
+
+volumes:
+  namenode:
+  datanode:
+  historyserver:
