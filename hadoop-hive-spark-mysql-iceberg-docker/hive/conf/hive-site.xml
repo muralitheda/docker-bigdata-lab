@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<configuration>
+  <!-- Metastore storage -->
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:postgresql://hive-metastore-postgresql:5432/metastore</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>org.postgresql.Driver</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>hive</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>hive</value>
+  </property>
+
+  <!-- point Hive clients to the metastore -->
+  <property>
+    <name>hive.metastore.uris</name>
+    <value>thrift://hive-metastore:9083</value>
+  </property>
+
+  <!-- ask Hive to use Spark as execution engine (note: can be fragile depending on Hive build) -->
+  <property>
+    <name>hive.execution.engine</name>
+    <value>spark</value>
+  </property>
+
+  <!-- tell Hive where aux jars live (we mount ./jars -> /opt/hive/auxlib) -->
+  <property>
+    <name>hive.aux.jars.path</name>
+    <value>file:///opt/hive/auxlib</value>
+  </property>
+
+  <!-- Iceberg-specific toggles (optional) -->
+  <property>
+    <name>iceberg.engine.hive.enabled</name>
+    <value>true</value>
+  </property>
+</configuration>
+

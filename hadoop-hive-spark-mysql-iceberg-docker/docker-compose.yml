@@ -1,0 +1,83 @@
+services:
+  namenode:
+    image: bde2020/hadoop-namenode:2.0.0-hadoop2.7.4-java8
+    container_name: namenode
+    restart: always
+    ports:
+      - "9870:9870"
+      - "9000:9000"
+    volumes:
+      - namenode:/hadoop/dfs/name
+    environment:
+      - CLUSTER_NAME=test
+    platform: linux/amd64
+
+  datanode:
+    image: bde2020/hadoop-datanode:2.0.0-hadoop2.7.4-java8
+    container_name: datanode
+    restart: always
+    ports:
+      - "9864:9864"
+    volumes:
+      - datanode:/hadoop/dfs/data
+    environment:
+      - SERVICE_PRECONDITION=namenode:9870
+    platform: linux/amd64
+
+  hive-metastore-postgresql:
+    image: bde2020/hive-metastore-postgresql:2.3.0
+    container_name: hive-metastore-postgresql
+    restart: always
+    platform: linux/amd64
+
+  hive-metastore:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-metastore
+    restart: always
+    environment:
+      SERVICE_NAME: metastore
+      HIVE_METASTORE_URI: thrift://hive-metastore:9083
+    depends_on:
+      - hive-metastore-postgresql
+    ports:
+      - "9083:9083"
+    platform: linux/amd64
+
+  hive-server:
+    image: bde2020/hive:2.3.2-postgresql-metastore
+    container_name: hive-server
+    restart: always
+    environment:
+      SERVICE_NAME: hiveserver2
+      HIVE_METASTORE_URI: thrift://hive-metastore:9083
+    depends_on:
+      - hive-metastore
+    ports:
+      - "10000:10000"
+    platform: linux/amd64
+
+  spark-master:
+    image: bitnami/spark:3.3.2
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+    ports:
+      - "7077:7077"
+      - "8080:8080"
+    platform: linux/amd64
+
+  spark-worker:
+    image: bitnami/spark:3.3.2
+    container_name: spark-worker
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    depends_on:
+      - spark-master
+    ports:
+      - "8081:8081"
+    platform: linux/amd64
+
+volumes:
+  namenode:
+  datanode:
